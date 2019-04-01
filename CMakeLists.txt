@@ -924,8 +924,6 @@ endif()
 
 if (COOLPROP_GOLANG_MODULE)
 
-  INCLUDE(dev/cmake/GolangSimple.cmake)
-
   # Must have SWIG
   FIND_PACKAGE(SWIG REQUIRED)
   INCLUDE(${SWIG_USE_FILE})
