@@ -922,6 +922,33 @@ if (COOLPROP_OCTAVE_MODULE)
   install (TARGETS ${app_name} DESTINATION Octave/Octave${OCTAVE_VERSION}_${CMAKE_SYSTEM_NAME}_${BITNESS}bit)
 endif()
 
+if (COOLPROP_GOLANG_MODULE)
+
+  INCLUDE(dev/cmake/GolangSimple.cmake)
+
+  # Must have SWIG
+  FIND_PACKAGE(SWIG REQUIRED)
+  INCLUDE(${SWIG_USE_FILE})
+
+  # Make a src directory to deal with file permissions problem with MinGW makefile
+  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src)
+
+  set(I_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/CoolProp.i")
+
+  set(SWIG_OPTIONS "${COOLPROP_SWIG_OPTIONS}")
+  string(REPLACE " " ";" SWIG_OPTIONS "${SWIG_OPTIONS}")
+  SET_SOURCE_FILES_PROPERTIES(${I_FILE} PROPERTIES SWIG_FLAGS "${SWIG_OPTIONS}")
+  SET_SOURCE_FILES_PROPERTIES(${I_FILE} PROPERTIES CPLUSPLUS ON)
+
+  add_definitions(-DNO_ERROR_CATCHING) #disable internal error catching and allow swig to do the error catching itself
+
+  SET(SWIG_MODULE_CoolProp_EXTRA_DEPS ${SWIG_DEPENDENCIES})
+  SWIG_ADD_LIBRARY(CoolProp LANGUAGE go SOURCES ${I_FILE} ${APP_SOURCES})
+
+  add_dependencies(${app_name} generate_headers)
+
+endif ()
+
 if (COOLPROP_CSHARP_MODULE)
 
   # Must have SWIG and C#
