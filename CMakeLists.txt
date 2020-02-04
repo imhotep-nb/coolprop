@@ -933,7 +933,7 @@ if (COOLPROP_GOLANG_MODULE)
 
   set(I_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/CoolProp.i")
 
-  set(COOLPROP_SWIG_OPTIONS "-cgo -intgosize 64")
+  set(COOLPROP_SWIG_OPTIONS "-intgosize 64")
   set(SWIG_OPTIONS "${COOLPROP_SWIG_OPTIONS}")
   string(REPLACE " " ";" SWIG_OPTIONS "${SWIG_OPTIONS}")
   SET_SOURCE_FILES_PROPERTIES(${I_FILE} PROPERTIES SWIG_FLAGS "${SWIG_OPTIONS}")
@@ -943,14 +943,6 @@ if (COOLPROP_GOLANG_MODULE)
 
   SET(SWIG_MODULE_CoolProp_EXTRA_DEPS ${SWIG_DEPENDENCIES})
   SWIG_ADD_LIBRARY(CoolProp LANGUAGE go SOURCES ${I_FILE} ${APP_SOURCES})
-
-  get_filename_component(MAIN_SRC_ABS "${CMAKE_CURRENT_BINARY_DIR}/CoolProp.go" ABSOLUTE)
-  add_custom_command(TARGET ${app_name}
-          COMMAND env GOPATH=${GOPATH} go build
-          -o "${CMAKE_CURRENT_BINARY_DIR}/${app_name}"
-          ${CMAKE_GO_FLAGS} "${CMAKE_CURRENT_BINARY_DIR}/CoolProp.go"
-          WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-          DEPENDS ${MAIN_SRC_ABS})
 
   add_dependencies(${app_name} generate_headers)
 
