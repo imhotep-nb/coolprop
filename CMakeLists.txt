@@ -945,7 +945,7 @@ if (COOLPROP_GOLANG_MODULE)
   SWIG_ADD_LIBRARY(CoolProp LANGUAGE go SOURCES ${I_FILE} ${APP_SOURCES})
 
   add_custom_command(TARGET CoolProp
-          COMMAND go build )
+          COMMAND env CGO_CXXFLAGS="-I${COOLPROP_INCLUDE_DIRECTORIES}" go build )
 
   add_dependencies(${app_name} generate_headers)
 
