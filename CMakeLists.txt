@@ -944,6 +944,9 @@ if (COOLPROP_GOLANG_MODULE)
   SET(SWIG_MODULE_CoolProp_EXTRA_DEPS ${SWIG_DEPENDENCIES})
   SWIG_ADD_LIBRARY(CoolProp LANGUAGE go SOURCES ${I_FILE} ${APP_SOURCES})
 
+  add_custom_command(TARGET CoolProp
+          COMMAND go build )
+
   add_dependencies(${app_name} generate_headers)
 
 endif ()
