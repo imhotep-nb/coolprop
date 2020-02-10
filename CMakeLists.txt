@@ -935,19 +935,11 @@ if (COOLPROP_GOLANG_MODULE)
 
   set(COOLPROP_SWIG_OPTIONS "-cgo -intgosize 64")
   set(SWIG_OPTIONS "${COOLPROP_SWIG_OPTIONS}")
-  string(REPLACE " " ";" SWIG_OPTIONS "${SWIG_OPTIONS}")
+
   SET_SOURCE_FILES_PROPERTIES(${I_FILE} PROPERTIES SWIG_FLAGS "${SWIG_OPTIONS}")
   SET_SOURCE_FILES_PROPERTIES(${I_FILE} PROPERTIES CPLUSPLUS ON)
 
-  add_definitions(-DNO_ERROR_CATCHING) #disable internal error catching and allow swig to do the error catching itself
-
-  SET(SWIG_MODULE_CoolProp_EXTRA_DEPS ${SWIG_DEPENDENCIES})
   SWIG_ADD_LIBRARY(CoolProp LANGUAGE go SOURCES ${I_FILE} ${APP_SOURCES})
-
-  add_custom_command(TARGET CoolProp
-          COMMAND env CGO_CXXFLAGS="-I${COOLPROP_INCLUDE_DIRECTORIES}" go build )
-
-  add_dependencies(${app_name} generate_headers)
 
 endif ()
 
