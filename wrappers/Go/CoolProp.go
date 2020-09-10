@@ -809,6 +809,8 @@ extern swig_intgo _wrap_returnHumAirCode_CoolProp_ef03193b832d75f0(swig_type_138
 extern double _wrap_cair_sat_CoolProp_ef03193b832d75f0(double arg1);
 #undef intgo
 */
+//#cgo CXXFLAGS: -I${SRCDIR}/../../include -I${SRCDIR}/../../externals/fmtlib
+//#cgo LDFLAGS: -L. -lCoolProp -ldl
 import "C"
 
 import "unsafe"
