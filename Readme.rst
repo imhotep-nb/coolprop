@@ -80,3 +80,106 @@ It was originally developed by Ian Bell, at the time a post-doc at the Universit
    image:: https://badges.gitter.im/Join%20Chat.svg
    :alt: Join the chat at https://gitter.im/CoolProp/CoolProp
    :target: https://gitter.im/CoolProp/CoolProp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+   
+   
+SWIG Coolprop wrapping for Golang 
+===================
+
+The workflow was written in `CoolProp issue 1871 <https://github.com/CoolProp/CoolProp/issues/1871#issuecomment-582898288>`_  by   `Gautier Rouaze <https://github.com/GautierR>`_ , here only add more details to the process.
+
+Apply to: **linux OS** and **WSL for windows user**, here we are doing to **Ubuntu** users.
+*if you use another distro, well we assume you can handle with the diferences ;)*
+
+**Pre requisites**
+
+- ``sudo apt update && sudo apt upgrade``
+- ``sudo apt install build-essential``
+- ``sudo apt install python-is-python3``
+- ``sudo apt install cmake``
+- ``sudo apt install swig``
+- `Install Go <https://golang.org/doc/install>`_
+
+**Workflow**
+
+First we are gone to compile the original C++ `CoolProp <https://github.com/CoolProp/CoolProp>`_  in order to get some files that we will need when compile the wrapper to Goland
+
+Use the ``--recursive`` argument if you dont want to suffer mannually cloning  all the  `CoolProp/externals/ <https://github.com/CoolProp/CoolProp/tree/master/externals>`_ repostiories
+
+- ``git clone git@github.com:CoolProp/CoolProp.git --recursive`` 
+- ``cd CoolProp``
+- ``mkdir build && cd build``
+- ``cmake ..``
+- ``cmake --build .``
+
+We will need some files that will be generate in the ``/CoolProp/include/`` directory after compile it.
+For the moment we will hold that until we need that files.
+
+Now clone the `jjcooling fork <https://github.com/jjcooling/coolprop>`_  or clone our `imhotep-nb fork <https://github.com/imhotep-nb/coolprop>`_  (at the moment is the same thing).
+If you clone in the same directory where you clone the original CoolProp you have to rename it to avoid conflicts.
+
+- ``git clone -b golang_module git@github.com:GautierR/CoolProp.git CoolProp_go --recursive``
+
+- ``cd CoolProp_go``
+
+- ``mkdir build && cd build``
+
+- ``cmake .. -DCOOLPROP_GOLANG_MODULE=ON``
+
+- ``cmake --build .``
+
+At this point we will get an error like ``fatal error: gitrevision.h: No such file or directory``
+Now we go to our previously compile ``/CoolProp/include/`` directory and there has to be the ``gitrevision.h`` file, you have to copy that and paste in ``/CoolProp_go/include/``
+
+Its possible that apart of the ``gitrevision.h`` file you need to copy some other ``*.h`` files so only check what do the ``cmake --build .`` ask you and bring it to the same route
+that the ``gitrevision.h`` file.
+
+- Move the ``CoolProp.go`` and ``CoolProp.so`` files generates in ``/CoolProp_go/build/`` inside a new go package (under ``/go/src/CoolProp``).
+
+- ``mkdir $GOPATH/src/CoolProp``
+- ``scp CoolProp.go $GOPATH/src/CoolProp/CoolProp.go``
+- ``scp CoolProp.so $GOPATH/src/CoolProp/CoolProp.so``
+
+- Move to this directory and update the ``cgo`` part of ``CoolProp.go`` file with the LDFLAGS (linking the shared library).
+
+- ``cd $GOPATH/src/CoolProp``
+- ``vim CoolProp.go``
+
+Add the following line just before the import "C" statement (inside all the commented part).
+
+- ``#cgo LDFLAGS: -L${SRCDIR} -l:CoolProp.so -ldl``
+
+I mean here::
+
+   package CoolProp
+   /*
+   #define intgo swig_intgo
+   typedef void *swig_voidp;
+   #cgo LDFLAGS: -L${SRCDIR} -l:CoolProp.so -ldl
+   #include <stdint.h>
+
+Try to build the package:
+
+- ``go install``
+
+Export the shared library to the LD_LIBRARY_PATH
+
+- ``export LD_LIBRARY_PATH=$GOPATH/src/CoolProp``
+
+Then you can use the go package inside another program ``test_coolprop.go`` ::
+
+   package main
+   import "CoolProp"
+   import "fmt"
+   func main() {
+          waterTCrit := CoolProp.Props1SI("Tcrit", "water")
+          fmt.Printf("Water TCrit : %v degC \n", waterTCrit - 273.16)
+   }
+
+Run it or build it like your preference.
+
+- ``go run test_coolprop.go``::
+
+   Water TCrit : 373.936 degC
+
+
+ 
