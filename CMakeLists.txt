@@ -941,6 +941,7 @@ if (COOLPROP_GOLANG_MODULE)
   SET_SOURCE_FILES_PROPERTIES(${I_FILE} PROPERTIES CPLUSPLUS ON)
 
   SWIG_ADD_LIBRARY(CoolProp LANGUAGE go SOURCES ${I_FILE} ${APP_SOURCES})
+  add_dependencies (CoolProp generate_headers)
 
 endif ()
 
