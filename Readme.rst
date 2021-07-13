@@ -87,10 +87,10 @@ SWIG Coolprop wrapping for Golang
 
 The workflow was written in `CoolProp issue 1871 <https://github.com/CoolProp/CoolProp/issues/1871#issuecomment-582898288>`_  by   `Gautier Rouaze <https://github.com/GautierR>`_ , here only add more details to the process.
 
-Apply to: **linux OS** and **WSL for windows user**, here we are doing to **Ubuntu** users.
-*if you use another distro, well we assume you can handle with the diferences ;)*
+Apply to: **Linux OS** and **WSL for windows user**, here we are doing to **Ubuntu** users.
+*if you use another distro, well we assume you can handle with the differences  ;)*
 
-**Pre requisites**
+**Prerequisites**
 
 - ``sudo apt update && sudo apt upgrade``
 - ``sudo apt install build-essential``
@@ -101,25 +101,13 @@ Apply to: **linux OS** and **WSL for windows user**, here we are doing to **Ubun
 
 **Workflow**
 
-First we are gone to compile the original C++ `CoolProp <https://github.com/CoolProp/CoolProp>`_  in order to get some files that we will need when compile the wrapper to Goland
+Clone the ``golang_module`` branch in our `imhotep-nb CoolProp fork <https://github.com/imhotep-nb/coolprop/tree/golang_module>`_ .
 
-Use the ``--recursive`` argument if you dont want to suffer mannually cloning  all the  `CoolProp/externals/ <https://github.com/CoolProp/CoolProp/tree/master/externals>`_ repostiories
+Use the ``--recursive`` argument if you don't want to suffer manually cloning all the  `CoolProp/externals/ <https://github.com/imhotep-nb/coolprop/tree/golang_module/externals>`_ repositories
 
-- ``git clone git@github.com:CoolProp/CoolProp.git --recursive`` 
+- ``git clone -b golang_module git@github.com:imhotep-nb/coolprop.git CoolProp --recursive``
+
 - ``cd CoolProp``
-- ``mkdir build && cd build``
-- ``cmake ..``
-- ``cmake --build .``
-
-We will need some files that will be generate in the ``/CoolProp/include/`` directory after compile it.
-For the moment we will hold that until we need that files.
-
-Now clone the `jjcooling fork <https://github.com/jjcooling/coolprop>`_  or clone our `imhotep-nb fork <https://github.com/imhotep-nb/coolprop>`_  (at the moment is the same thing).
-If you clone in the same directory where you clone the original CoolProp you have to rename it to avoid conflicts.
-
-- ``git clone -b golang_module git@github.com:GautierR/CoolProp.git CoolProp_go --recursive``
-
-- ``cd CoolProp_go``
 
 - ``mkdir build && cd build``
 
@@ -127,19 +115,15 @@ If you clone in the same directory where you clone the original CoolProp you hav
 
 - ``cmake --build .``
 
-At this point we will get an error like ``fatal error: gitrevision.h: No such file or directory``
-Now we go to our previously compile ``/CoolProp/include/`` directory and there has to be the ``gitrevision.h`` file, you have to copy that and paste in ``/CoolProp_go/include/``
+At this point if you will get an error like ``fatal error: gitrevision.h: No such file or directory``, please follow the process in `e7c5493 <https://github.com/imhotep-nb/coolprop/commit/e7c54933825f3da379c490ef241d9a428716f9a2>`_.
 
-Its possible that apart of the ``gitrevision.h`` file you need to copy some other ``*.h`` files so only check what do the ``cmake --build .`` ask you and bring it to the same route
-that the ``gitrevision.h`` file.
-
-- Move the ``CoolProp.go`` and ``CoolProp.so`` files generates in ``/CoolProp_go/build/`` inside a new go package (under ``/go/src/CoolProp``).
+Move the ``CoolProp.go`` and ``CoolProp.so`` files generates in ``/CoolProp_go/build/`` inside a new go package (under ``/go/src/CoolProp``).
 
 - ``mkdir $GOPATH/src/CoolProp``
 - ``scp CoolProp.go $GOPATH/src/CoolProp/CoolProp.go``
 - ``scp CoolProp.so $GOPATH/src/CoolProp/CoolProp.so``
 
-- Move to this directory and update the ``cgo`` part of ``CoolProp.go`` file with the LDFLAGS (linking the shared library).
+Move to this directory and update the ``cgo`` part of ``CoolProp.go`` file with the LDFLAGS (linking the shared library).
 
 - ``cd $GOPATH/src/CoolProp``
 - ``vim CoolProp.go``
@@ -165,6 +149,8 @@ Export the shared library to the LD_LIBRARY_PATH
 
 - ``export LD_LIBRARY_PATH=$GOPATH/src/CoolProp``
 
+Remember that the export only work in your active terminal session, if you want it permanently please read `How to set LD_LIBRARY_PATH permanently? <https://askubuntu.com/questions/950313/how-to-set-ld-library-path-permanently#950315>`_.
+
 Then you can use the go package inside another program ``test_coolprop.go`` ::
 
    package main
@@ -175,7 +161,7 @@ Then you can use the go package inside another program ``test_coolprop.go`` ::
           fmt.Printf("Water TCrit : %v degC \n", waterTCrit - 273.16)
    }
 
-Run it or build it like your preference.
+Run it and Go!
 
 - ``go run test_coolprop.go``::
 
