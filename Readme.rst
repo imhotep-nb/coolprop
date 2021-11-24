@@ -80,3 +80,89 @@ It was originally developed by Ian Bell, at the time a post-doc at the Universit
    image:: https://badges.gitter.im/Join%20Chat.svg
    :alt: Join the chat at https://gitter.im/CoolProp/CoolProp
    :target: https://gitter.im/CoolProp/CoolProp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+
+
+SWIG Coolprop wrapping for Golang 
+===================
+
+The workflow was written in `CoolProp issue 1871 <https://github.com/CoolProp/CoolProp/issues/1871#issuecomment-582898288>`_  by   `Gautier Rouaze <https://github.com/GautierR>`_ , here only add more details to the process.
+
+Apply to: **Linux OS** and **WSL for windows user**, here we are doing to **Ubuntu** users.
+*if you use another distro, well we assume you can handle with the differences  ;)*
+
+**Prerequisites**
+
+- ``sudo apt update && sudo apt upgrade``
+- ``sudo apt install build-essential``
+- ``sudo apt install python-is-python3``
+- ``sudo apt install cmake``
+- ``sudo apt install swig``
+- `Install Go <https://golang.org/doc/install>`_
+
+**Workflow**
+
+Clone the ``golang_module`` branch in our `imhotep-nb CoolProp fork <https://github.com/imhotep-nb/coolprop/tree/golang_module>`_ .
+
+Use the ``--recursive`` argument if you don't want to suffer manually cloning all the  `CoolProp/externals/ <https://github.com/imhotep-nb/coolprop/tree/golang_module/externals>`_ repositories
+
+- ``git clone -b golang_module git@github.com:imhotep-nb/coolprop.git CoolProp --recursive``
+
+- ``cd CoolProp``
+
+- ``mkdir build && cd build``
+
+- ``cmake .. -DCOOLPROP_GOLANG_MODULE=ON``
+
+- ``cmake --build .``
+
+At this point if you will get an error like ``fatal error: gitrevision.h: No such file or directory``, please follow the process in `e7c5493 <https://github.com/imhotep-nb/coolprop/commit/e7c54933825f3da379c490ef241d9a428716f9a2>`_.
+
+Move the ``CoolProp.go`` and ``CoolProp.so`` files generates in ``/CoolProp_go/build/`` inside a new go package (under ``/go/src/CoolProp``).
+
+- ``mkdir $GOPATH/src/CoolProp``
+- ``scp CoolProp.go $GOPATH/src/CoolProp/CoolProp.go``
+- ``scp CoolProp.so $GOPATH/src/CoolProp/CoolProp.so``
+
+Move to this directory and update the ``cgo`` part of ``CoolProp.go`` file with the LDFLAGS (linking the shared library).
+
+- ``cd $GOPATH/src/CoolProp``
+- ``vim CoolProp.go``
+
+Add the following line just before the import "C" statement (inside all the commented part).
+
+- ``#cgo LDFLAGS: -L${SRCDIR} -l:CoolProp.so -ldl``
+
+I mean here::
+
+   package CoolProp
+   /*
+   #define intgo swig_intgo
+   typedef void *swig_voidp;
+   #cgo LDFLAGS: -L${SRCDIR} -l:CoolProp.so -ldl
+   #include <stdint.h>
+
+Try to build the package:
+
+- ``go install``
+
+Export the shared library to the LD_LIBRARY_PATH
+
+- ``export LD_LIBRARY_PATH=$GOPATH/src/CoolProp``
+
+Remember that the export only work in your active terminal session, if you want it permanently please read `How to set LD_LIBRARY_PATH permanently? <https://askubuntu.com/questions/950313/how-to-set-ld-library-path-permanently#950315>`_.
+
+Then you can use the go package inside another program ``test_coolprop.go`` ::
+
+   package main
+   import "CoolProp"
+   import "fmt"
+   func main() {
+          waterTCrit := CoolProp.Props1SI("Tcrit", "water")
+          fmt.Printf("Water TCrit : %v degC \n", waterTCrit - 273.16)
+   }
+
+Run it and Go!
+
+- ``go run test_coolprop.go``::
+
+   Water TCrit : 373.936 degC
