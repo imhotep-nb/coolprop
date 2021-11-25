@@ -105,7 +105,7 @@ Clone the ``golang_module`` branch in our `imhotep-nb CoolProp fork <https://git
 
 Use the ``--recursive`` argument if you don't want to suffer manually cloning all the  `CoolProp/externals/ <https://github.com/imhotep-nb/coolprop/tree/golang_module/externals>`_ repositories
 
-- ``git clone -b golang_module git@github.com:imhotep-nb/coolprop.git CoolProp --recursive``
+- ``git clone -b golang_module https://github.com/imhotep-nb/coolprop.git CoolProp --recursive``
 
 - ``cd CoolProp``
 
@@ -117,7 +117,8 @@ Use the ``--recursive`` argument if you don't want to suffer manually cloning al
 
 At this point if you will get an error like ``fatal error: gitrevision.h: No such file or directory``, please follow the process in `e7c5493 <https://github.com/imhotep-nb/coolprop/commit/e7c54933825f3da379c490ef241d9a428716f9a2>`_.
 
-Move the ``CoolProp.go`` and ``CoolProp.so`` files generates in ``/CoolProp_go/build/`` inside a new go package (under ``/go/src/CoolProp``).
+Move the ``CoolProp.go`` and ``CoolProp.so`` files generates in ``/CoolProp_go/build/`` inside a new go package (under ``$GOPATH/src/CoolProp``).
+Usually ``$GOPATH = '/usr/local/go'``
 
 - ``mkdir $GOPATH/src/CoolProp``
 - ``scp CoolProp.go $GOPATH/src/CoolProp/CoolProp.go``
@@ -128,7 +129,7 @@ Move to this directory and update the ``cgo`` part of ``CoolProp.go`` file with 
 - ``cd $GOPATH/src/CoolProp``
 - ``vim CoolProp.go``
 
-Add the following line just before the import "C" statement (inside all the commented part).
+Add the following line before the import "C" statement and inside of all the commented part.
 
 - ``#cgo LDFLAGS: -L${SRCDIR} -l:CoolProp.so -ldl``
 
